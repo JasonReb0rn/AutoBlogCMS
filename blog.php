@@ -114,8 +114,27 @@ try {
                         <div class="post-excerpt">
                             <?php 
                             // Clean the excerpt and add ellipsis
-                            $excerpt = strip_tags($post['Excerpt']);
-                            echo strlen($excerpt) > 297 ? substr($excerpt, 0, 297) . '...' : $excerpt;
+                            $excerpt = $post['Excerpt'];
+                            // Add spaces around block-level elements
+                            $excerpt = preg_replace('/<\/?(?:p|div|h[1-6]|ul|ol|li|blockquote|pre|table|tr|th|td)[^>]*>/i', ' $0 ', $excerpt);
+                            // Replace <br>, <br/>, and <br /> tags with a space
+                            $excerpt = preg_replace('/<br\s*\/?>/i', ' ', $excerpt);
+                            // Remove all HTML tags
+                            $excerpt = strip_tags($excerpt);
+                            // Replace multiple spaces (including newlines and tabs) with a single space
+                            $excerpt = preg_replace('/\s+/', ' ', $excerpt);
+                            // Trim whitespace
+                            $excerpt = trim($excerpt);
+                            // Make sure we truncate at a word boundary
+                            if (strlen($excerpt) > 297) {
+                                // Find the last space within the 297 character limit
+                                $pos = strrpos(substr($excerpt, 0, 297), ' ');
+                                if ($pos === false) {
+                                    $pos = 297;
+                                }
+                                $excerpt = substr($excerpt, 0, $pos) . '...';
+                            }
+                            echo $excerpt;
                             ?>
                         </div>
                         
