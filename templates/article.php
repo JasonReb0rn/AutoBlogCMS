@@ -90,5 +90,7 @@
     <!-- PRESERVED_INCLUDE_START: footer.php -->
     <?php include_once 'footer.php'; ?>
     <!-- PRESERVED_INCLUDE_END -->
+
+    <script src="/js/image-modal.js"></script>
 </body>
 </html>

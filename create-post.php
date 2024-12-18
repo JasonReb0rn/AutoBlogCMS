@@ -99,6 +99,8 @@ $categories = getAllCategories($pdo);
         </main>
     </div>
 
+    <script src="/js/image-modal.js"></script>
+
     <!-- Quill JS -->
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <!-- Tagify JS -->
@@ -115,7 +117,6 @@ $categories = getAllCategories($pdo);
                 node.className = `blog-image-wrapper ${value.size || 'medium'} ${value.alignment || 'center'}`;
                 if (value.enlargeable !== false) {
                     node.setAttribute('data-enlargeable', 'true');
-                    node.onclick = BlogImageBlot.handleImageClick;
                 }
             
                 // Create and append image
@@ -147,41 +148,6 @@ $categories = getAllCategories($pdo);
                     alignment: node.className.match(/\b(left|center|right)\b/)?.[0] || 'center',
                     enlargeable: node.getAttribute('data-enlargeable') === 'true'
                 };
-            }
-        
-            static handleImageClick(event) {
-                const wrapper = event.currentTarget;
-                const img = wrapper.querySelector('.blog-content-image');
-
-                // Create modal if it doesn't exist
-                let modal = document.getElementById('image-modal');
-                if (!modal) {
-                    modal = document.createElement('div');
-                    modal.id = 'image-modal';
-                    modal.className = 'image-modal';
-                    modal.innerHTML = `
-                        <div class="modal-content">
-                            <img src="" alt="" />
-                            <figcaption></figcaption>
-                            <button class="close-modal">&times;</button>
-                        </div>
-                    `;
-                    document.body.appendChild(modal);
-
-                    // Close modal on click outside or close button
-                    modal.onclick = (e) => {
-                        if (e.target === modal || e.target.className === 'close-modal') {
-                            modal.style.display = 'none';
-                        }
-                    };
-                }
-
-                // Update and show modal
-                const modalImg = modal.querySelector('img');
-                const modalCaption = modal.querySelector('figcaption');
-                modalImg.src = img.src;
-                modalCaption.textContent = wrapper.querySelector('.blog-image-caption')?.textContent || '';
-                modal.style.display = 'flex';
             }
         }
 
@@ -380,16 +346,16 @@ $categories = getAllCategories($pdo);
             const formData = new FormData(form);
             formData.append('content', quill.root.innerHTML);
             formData.append('status', 'draft');
-                
+
             // Get featured image caption if it exists
             const captionElement = document.getElementById('imageCaption');
             if (captionElement && captionElement.textContent) {
                 formData.append('featuredImageCaption', captionElement.textContent);
             }
-            
+
             const tags = tagify.value.map(tag => tag.value);
             formData.append('tags', JSON.stringify(tags));
-            
+
             fetch('includes/manage-post.inc.php', {
                 method: 'POST',
                 body: formData
