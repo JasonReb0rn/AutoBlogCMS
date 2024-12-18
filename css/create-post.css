@@ -1,0 +1,232 @@
+.editor-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+#editor {
+    height: 400px;
+    margin-bottom: 20px;
+}
+
+.post-form {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.form-group input[type="text"],
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.featured-image-preview {
+    max-width: 300px;
+    margin-top: 10px;
+    display: none;
+}
+
+.featured-image-container {
+    margin-top: 10px;
+}
+
+.upload-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.upload-controls input[type="text"] {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.buttons-container {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+/* Image wrapper styles */
+.blog-image-wrapper {
+    margin: 2rem 0;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* Size variations */
+.blog-image-wrapper.small {
+    max-width: 300px;
+}
+
+.blog-image-wrapper.medium {
+    max-width: 500px;
+}
+
+.blog-image-wrapper.large {
+    max-width: 800px;
+}
+
+.blog-image-wrapper.full {
+    max-width: 100%;
+}
+
+/* Alignment variations */
+.blog-image-wrapper.left {
+    margin-right: auto;
+    margin-left: 0;
+}
+
+.blog-image-wrapper.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.blog-image-wrapper.right {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+/* Image styles */
+.blog-content-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Caption styles */
+.blog-image-caption {
+    text-align: center;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+/* Modal styles */
+.image-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+}
+
+.modal-content img {
+    max-width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.modal-content figcaption {
+    color: white;
+    text-align: center;
+    padding: 1rem;
+}
+
+.close-modal {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    color: white;
+    font-size: 2rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Image options dialog */
+.image-options-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.dialog-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    max-width: 500px;
+    width: 90%;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.dialog-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.dialog-buttons button {
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-cancel {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+}
+
+.btn-insert {
+    background: #2196f3;
+    color: white;
+    border: none;
+}

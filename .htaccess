@@ -1,0 +1,35 @@
+# Disable MultiViews
+Options -MultiViews
+
+# Enable URL rewriting
+RewriteEngine On
+RewriteBase /
+
+# Pretty URLs for blog posts
+# Transforms /blog/post/1/my-post-title to post.php?id=1
+RewriteRule ^blog/post/([0-9]+)(/.*)?$ post.php?id=$1 [L,QSA]
+
+# Pretty URLs for blog pagination
+# Transforms /blog/page/2 to blog.php?page=2
+RewriteRule ^blog/page/([0-9]+)$ blog.php?page=$1 [L,QSA]
+
+# Pretty URLs for categories
+RewriteRule ^category/([^/]+)$ category.php?slug=$1 [L,QSA]
+
+# Pretty URLs for tags
+RewriteRule ^tag/([^/]+)$ tag.php?slug=$1 [L,QSA]
+
+# Prevent direct access to cache directory
+<IfModule mod_rewrite.c>
+    RewriteRule ^cache/ - [F,L]
+</IfModule>
+
+# Cache control headers for static assets
+<FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "max-age=3600, public"
+</FilesMatch>
+
+# Compression for better performance
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript
+</IfModule>
