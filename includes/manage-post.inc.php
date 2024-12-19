@@ -14,79 +14,130 @@ header('Content-Type: application/json');
 try {
     $pdo->beginTransaction();
     
-    // Insert the post
-    $stmt = $pdo->prepare("
-        INSERT INTO Posts (
-            UserID, 
-            Title, 
-            Content, 
-            FeaturedImage, 
-            FeaturedImageCaption,
-            Status
-        )
-        VALUES (?, ?, ?, ?, ?, ?)
-    ");
-    
-    $stmt->execute([
-        $_SESSION["userid"],
-        $_POST["title"],
-        $_POST["content"],
-        $_POST["featuredImage"] ?? null,
-        $_POST["featuredImageCaption"] ?? null,
-        $_POST["status"]
-    ]);
-    
-    $postId = $pdo->lastInsertId();
-    
-    // Handle categories
-    if (!empty($_POST["category"])) {
+    if ($_POST['action'] === 'update') {
+        // Update existing post
         $stmt = $pdo->prepare("
-            INSERT INTO PostCategories (PostID, CategoryID)
-            VALUES (?, ?)
+            UPDATE Posts SET
+                Title = ?,
+                Content = ?,
+                FeaturedImage = ?,
+                FeaturedImageCaption = ?,
+                Status = ?,
+                UpdatedAt = CURRENT_TIMESTAMP
+            WHERE PostID = ?
         ");
-        $stmt->execute([$postId, $_POST["category"]]);
-    }
-    
-    // Handle tags
-    if (!empty($_POST["tags"])) {
-        $tags = json_decode($_POST["tags"]);
         
-        foreach ($tags as $tagName) {
-            // Try to find existing tag
-            $stmt = $pdo->prepare("
-                SELECT TagID FROM Tags 
-                WHERE Name = ?
-            ");
-            $stmt->execute([$tagName]);
-            $tag = $stmt->fetch();
+        $stmt->execute([
+            $_POST["title"],
+            $_POST["content"],
+            $_POST["featuredImage"] ?? null,
+            $_POST["featuredImageCaption"] ?? null,
+            $_POST["status"],
+            $_POST["postId"]
+        ]);
+        
+        // Update categories
+        if (!empty($_POST["category"])) {
+            // Remove existing categories
+            $stmt = $pdo->prepare("DELETE FROM PostCategories WHERE PostID = ?");
+            $stmt->execute([$_POST["postId"]]);
             
-            if (!$tag) {
-                // Create new tag
-                $stmt = $pdo->prepare("
-                    INSERT INTO Tags (Name, Slug)
-                    VALUES (?, ?)
-                ");
-                $stmt->execute([
-                    $tagName,
-                    createSlug($tagName)
-                ]);
-                $tagId = $pdo->lastInsertId();
-            } else {
-                $tagId = $tag['TagID'];
+            // Add new category
+            $stmt = $pdo->prepare("INSERT INTO PostCategories (PostID, CategoryID) VALUES (?, ?)");
+            $stmt->execute([$_POST["postId"], $_POST["category"]]);
+        }
+        
+        // Update tags
+        if (isset($_POST["tags"])) {
+            // Remove existing tags
+            $stmt = $pdo->prepare("DELETE FROM PostTags WHERE PostID = ?");
+            $stmt->execute([$_POST["postId"]]);
+            
+            $tags = json_decode($_POST["tags"]);
+            foreach ($tags as $tagName) {
+                // Try to find existing tag
+                $stmt = $pdo->prepare("SELECT TagID FROM Tags WHERE Name = ?");
+                $stmt->execute([$tagName]);
+                $tag = $stmt->fetch();
+                
+                if (!$tag) {
+                    // Create new tag
+                    $stmt = $pdo->prepare("INSERT INTO Tags (Name, Slug) VALUES (?, ?)");
+                    $stmt->execute([$tagName, createSlug($tagName)]);
+                    $tagId = $pdo->lastInsertId();
+                } else {
+                    $tagId = $tag['TagID'];
+                }
+                
+                // Create post-tag relationship
+                $stmt = $pdo->prepare("INSERT INTO PostTags (PostID, TagID) VALUES (?, ?)");
+                $stmt->execute([$_POST["postId"], $tagId]);
             }
-            
-            // Create post-tag relationship
+        }
+        
+        $postId = $_POST["postId"];
+    } else {
+        // Insert new post
+        $stmt = $pdo->prepare("
+            INSERT INTO Posts (
+                UserID, 
+                Title, 
+                Content, 
+                FeaturedImage, 
+                FeaturedImageCaption,
+                Status
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        
+        $stmt->execute([
+            $_SESSION["userid"],
+            $_POST["title"],
+            $_POST["content"],
+            $_POST["featuredImage"] ?? null,
+            $_POST["featuredImageCaption"] ?? null,
+            $_POST["status"]
+        ]);
+        
+        $postId = $pdo->lastInsertId();
+        
+        // Handle categories
+        if (!empty($_POST["category"])) {
             $stmt = $pdo->prepare("
-                INSERT INTO PostTags (PostID, TagID)
+                INSERT INTO PostCategories (PostID, CategoryID)
                 VALUES (?, ?)
             ");
-            $stmt->execute([$postId, $tagId]);
+            $stmt->execute([$postId, $_POST["category"]]);
+        }
+        
+        // Handle tags
+        if (isset($_POST["tags"])) {
+            $tags = json_decode($_POST["tags"]);
+            foreach ($tags as $tagName) {
+                // Try to find existing tag
+                $stmt = $pdo->prepare("SELECT TagID FROM Tags WHERE Name = ?");
+                $stmt->execute([$tagName]);
+                $tag = $stmt->fetch();
+                
+                if (!$tag) {
+                    // Create new tag
+                    $stmt = $pdo->prepare("INSERT INTO Tags (Name, Slug) VALUES (?, ?)");
+                    $stmt->execute([$tagName, createSlug($tagName)]);
+                    $tagId = $pdo->lastInsertId();
+                } else {
+                    $tagId = $tag['TagID'];
+                }
+                
+                // Create post-tag relationship
+                $stmt = $pdo->prepare("INSERT INTO PostTags (PostID, TagID) VALUES (?, ?)");
+                $stmt->execute([$postId, $tagId]);
+            }
         }
     }
     
     $pdo->commit();
 
-    // Invalidate cache for this new post
+    // Invalidate cache for this post
     $cache = new CacheManager();
     $cache->invalidate($postId);
 
@@ -94,7 +145,7 @@ try {
     
 } catch (PDOException $e) {
     $pdo->rollBack();
-    error_log("Error creating post: " . $e->getMessage());
+    error_log("Error managing post: " . $e->getMessage());
     echo json_encode(['success' => false, 'error' => 'Database error occurred']);
 }
 

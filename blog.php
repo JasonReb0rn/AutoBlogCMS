@@ -125,15 +125,24 @@ try {
                             $excerpt = preg_replace('/\s+/', ' ', $excerpt);
                             // Trim whitespace
                             $excerpt = trim($excerpt);
-                            // Make sure we truncate at a word boundary
-                            if (strlen($excerpt) > 297) {
-                                // Find the last space within the 297 character limit
-                                $pos = strrpos(substr($excerpt, 0, 297), ' ');
-                                if ($pos === false) {
-                                    $pos = 297;
+
+                            // Check if the excerpt ends with a complete sentence
+                            $endsWithSentence = preg_match('/[.!?]\s*$/', $excerpt);
+                            // Check if the last word is complete (not cut off)
+                            $lastChar = substr($excerpt, -1);
+                            $endsWithCompleteWord = preg_match('/\s/', $lastChar) || preg_match('/[.!?,]/', $lastChar);
+
+                            // Add ellipsis if the excerpt doesn't end naturally
+                            if (!$endsWithSentence || !$endsWithCompleteWord) {
+                                // Find the last complete word
+                                $pos = strrpos($excerpt, ' ');
+                                if ($pos !== false) {
+                                    $excerpt = substr($excerpt, 0, $pos) . '...';
+                                } else {
+                                    $excerpt .= '...';
                                 }
-                                $excerpt = substr($excerpt, 0, $pos) . '...';
                             }
+
                             echo $excerpt;
                             ?>
                         </div>
@@ -171,40 +180,42 @@ try {
         
         </div>
 
-        <?php if ($totalPages > 1): ?>
-            <nav class="pagination">
-                <?php if ($currentPage > 1): ?>
-                    <a href="/blog/page/<?php echo ($currentPage - 1); ?>" class="page-link">
-                        Previous
-                    </a>
-                <?php endif; ?>
-                
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <?php if (
-                        $i == 1 || 
-                        $i == $totalPages || 
-                        ($i >= $currentPage - 2 && $i <= $currentPage + 2)
-                    ): ?>
-                        <a href="blog/page/<?php echo $i; ?>"
-                           class="page-link <?php echo $i === $currentPage ? 'active' : ''; ?>">
-                            <?php echo $i; ?>
-                        </a>
-                    <?php elseif (
-                        $i == $currentPage - 3 || 
-                        $i == $currentPage + 3
-                    ): ?>
-                        <span class="page-ellipsis">...</span>
-                    <?php endif; ?>
-                <?php endfor; ?>
-                
-                <?php if ($currentPage < $totalPages): ?>
-                    <a href="/blog/page/<?php echo ($currentPage + 1); ?>" class="page-link">
-                        Next
-                    </a>
-                <?php endif; ?>
-            </nav>
-        <?php endif; ?>
+
     </div>
+
+    <?php if ($totalPages > 1): ?>
+        <nav class="pagination">
+            <?php if ($currentPage > 1): ?>
+                <a href="/blog/page/<?php echo ($currentPage - 1); ?>" class="page-link">
+                    Previous
+                </a>
+            <?php endif; ?>
+            
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <?php if (
+                    $i == 1 || 
+                    $i == $totalPages || 
+                    ($i >= $currentPage - 2 && $i <= $currentPage + 2)
+                ): ?>
+                    <a href="/blog/page/<?php echo $i; ?>"
+                       class="page-link <?php echo $i === $currentPage ? 'active' : ''; ?>">
+                        <?php echo $i; ?>
+                    </a>
+                <?php elseif (
+                    $i == $currentPage - 3 || 
+                    $i == $currentPage + 3
+                ): ?>
+                    <span class="page-ellipsis">...</span>
+                <?php endif; ?>
+            <?php endfor; ?>
+            
+            <?php if ($currentPage < $totalPages): ?>
+                <a href="/blog/page/<?php echo ($currentPage + 1); ?>" class="page-link">
+                    Next
+                </a>
+            <?php endif; ?>
+        </nav>
+    <?php endif; ?>
 
     <?php
         include_once 'footer.php';

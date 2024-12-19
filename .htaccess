@@ -5,6 +5,10 @@ Options -MultiViews
 RewriteEngine On
 RewriteBase /
 
+# Redirect /blog.php to /blog/page/1
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/+blog\.php [NC]
+RewriteRule ^ /blog/page/1 [R=301,L]
+
 # Pretty URLs for blog posts
 # Transforms /blog/post/1/my-post-title to post.php?id=1
 RewriteRule ^blog/post/([0-9]+)(/.*)?$ post.php?id=$1 [L,QSA]

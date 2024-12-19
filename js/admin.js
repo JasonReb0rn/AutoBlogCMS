@@ -132,6 +132,35 @@ function loadUsers() {
         .catch(error => console.error('Error loading users:', error));
 }
 
+function editPost(postId) {
+    // Redirect to edit-post.php with the post ID
+    window.location.href = `edit-post.php?id=${postId}`;
+}
+
+function deletePost(postId) {
+    if (!confirm('Are you sure you want to delete this post?')) {
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('action', 'delete');
+    formData.append('postId', postId);
+    
+    fetch('includes/manage-post.inc.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            loadPosts();
+        } else {
+            alert(data.error || 'An error occurred');
+        }
+    })
+    .catch(error => console.error('Error deleting post:', error));
+}
+
 function loadPosts() {
     fetch('includes/get-posts.inc.php')
         .then(response => response.json())
