@@ -1,30 +1,31 @@
 <?php
-// includes/get-categories.inc.php
 session_start();
 require_once 'dbh.inc.php';
-require_once 'category-functions.inc.php';
 
 if (!isset($_SESSION["userid"]) || !in_array($_SESSION["role"], ["admin", "editor"])) {
     http_response_code(403);
-    exit(json_encode(['error' => 'Unauthorized']));
+    exit();
 }
 
-header('Content-Type: application/json');
-
-// If ID is provided, get single category
-if (isset($_GET['id'])) {
-    $categoryId = $_GET['id'];
-    $stmt = $pdo->prepare("SELECT * FROM Categories WHERE CategoryID = ?");
-    $stmt->execute([$categoryId]);
-    $category = $stmt->fetch();
+try {
+    $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+    $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 50;
     
-    if ($category) {
-        echo json_encode($category);
-    } else {
-        http_response_code(404);
-        echo json_encode(['error' => 'Category not found']);
-    }
-} else {
-    // Otherwise get all categories
-    echo json_encode(getAllCategories($pdo));
+    $offset = max(0, $offset);
+    $limit = max(1, min(100, $limit));
+    
+    $stmt = $pdo->prepare("
+        SELECT CategoryID, Name, Slug, CreatedAt
+        FROM Categories 
+        ORDER BY CreatedAt DESC
+        LIMIT ? OFFSET ?
+    ");
+    $stmt->execute([$limit, $offset]);
+    $categories = $stmt->fetchAll();
+    
+    header('Content-Type: application/json');
+    echo json_encode(['categories' => $categories]);
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database error']);
 }

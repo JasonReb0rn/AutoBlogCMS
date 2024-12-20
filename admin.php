@@ -24,17 +24,7 @@ $stats = getDashboardStats($pdo);
 </head>
 <body>
     <div class="admin-container">
-        <nav class="admin-nav">
-            
-            <a href="/home.php" class="logo">Blog CMS Admin</a>
-            <ul>
-                <li><a href="#overview" class="active">Overview</a></li>
-                <li><a href="#users">Users</a></li>
-                <li><a href="#posts">Posts</a></li>
-                <li><a href="#comments">Comments</a></li>
-                <li><a href="logout.php">Logout</a></li>
-            </ul>
-        </nav>
+        <?php include 'admin-header.php'; ?>
 
         <main class="admin-main">
             <section id="overview" class="dashboard-section">
@@ -60,9 +50,11 @@ $stats = getDashboardStats($pdo);
             </section>
 
             <section id="users" class="dashboard-section">
-                <h2>User Management</h2>
-                <div class="action-bar">
-                    <button onclick="showUserModal()" class="btn btn-primary">Add New User</button>
+                <div class="dashboard-section-header">
+                    <h2>User Management</h2>
+                    <div class="action-bar">
+                        <button onclick="showUserModal()" class="btn btn-primary">Add New User</button>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table id="usersTable">
@@ -83,9 +75,11 @@ $stats = getDashboardStats($pdo);
             </section>
 
             <section id="posts" class="dashboard-section">
-                <h2>Post Management</h2>
-                <div class="action-bar">
-                    <button onclick="window.location.href='create-post.php'" class="btn btn-primary">Create New Post</button>
+                <div class="dashboard-section-header">
+                    <h2>Post Management</h2>
+                    <div class="action-bar">
+                        <button onclick="window.location.href='create-post.php'" class="btn btn-primary">Create New Post</button>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table id="postsTable">
@@ -106,10 +100,13 @@ $stats = getDashboardStats($pdo);
             </section>
 
             <section id="categories" class="dashboard-section">
-                <h2>Category Management</h2>
-                <div class="action-bar">
-                    <button onclick="showCategoryModal()" class="btn btn-primary">Add New Category</button>
+                <div class="dashboard-section-header">
+                    <h2>Category Management</h2>
+                    <div class="action-bar">
+                        <button onclick="showCategoryModal()" class="btn btn-primary">Add New Category</button>
+                    </div>
                 </div>
+
                 <div class="table-responsive">
                     <table id="categoriesTable">
                         <thead>
@@ -179,7 +176,8 @@ $stats = getDashboardStats($pdo);
         </div>
     </div>
 
-    <script src="js/admin.js"></script>
+    <script src="js/user-management.js"></script>
+    <script src="js/post-management.js"></script>
     <script src="js/category-management.js"></script>
 </body>
 </html>
