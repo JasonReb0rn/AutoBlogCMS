@@ -72,8 +72,6 @@ function showCategoryModal(categoryId = null) {
                     document.getElementById('categoryId').value = category.CategoryID;
                     document.getElementById('categoryName').value = category.Name;
                     document.getElementById('categorySlug').value = category.Slug;
-                    // Mark as manually edited since we're loading an existing slug
-                    slugInput.dataset.manually_edited = 'true';
                 } else {
                     throw new Error('Invalid category data');
                 }
