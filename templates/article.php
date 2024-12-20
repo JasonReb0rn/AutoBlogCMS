@@ -70,9 +70,21 @@
             <div class="blog-categories">
                 <h2>Categories</h2>
                 <ul class="blog-categories-list">
-                    <li class="blog-category">
-                        <a href="?search=blog_post">Category</a>
-                    </li>
+                    <?php 
+                    // Get categories with post counts
+                    require_once ROOT_PATH . 'includes/category-functions.inc.php';
+                    $sidebarCategories = getCategoriesWithPostCount($pdo);
+                    foreach ($sidebarCategories as $category): 
+                        $slug = htmlspecialchars($category['Slug']);
+                        $name = htmlspecialchars($category['Name']);
+                        $count = (int)$category['post_count'];
+                    ?>
+                        <li class="blog-category">
+                            <a class="category-link" href="/category/<?php echo $slug; ?>">
+                                <span class="category-name"><?php echo $name; ?></span> <span class="category-count"><?php echo $count; ?></span>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
                 </ul>
             </div>
 

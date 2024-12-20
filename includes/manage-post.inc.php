@@ -13,8 +13,37 @@ header('Content-Type: application/json');
 
 try {
     $pdo->beginTransaction();
+
+    $action = $_POST['action'] ?? 'create';
     
-    if ($_POST['action'] === 'update') {
+    if ($action === 'delete') {
+        // Check if post exists and user has permission
+        $stmt = $pdo->prepare("SELECT UserID FROM Posts WHERE PostID = ?");
+        $stmt->execute([$_POST["postId"]]);
+        $post = $stmt->fetch();
+        
+        if (!$post) {
+            throw new Exception('Post not found');
+        }
+        
+        // Only post author or admin can delete
+        if ($_SESSION["role"] !== 'admin' && $post['UserID'] !== $_SESSION["userid"]) {
+            throw new Exception('Unauthorized to delete this post');
+        }
+        
+        // Delete post (cascade will handle related records)
+        $stmt = $pdo->prepare("DELETE FROM Posts WHERE PostID = ?");
+        $stmt->execute([$_POST["postId"]]);
+        
+        // Invalidate cache for this post
+        $cache = new CacheManager();
+        $cache->invalidate($_POST["postId"]);
+        
+        $pdo->commit();
+        echo json_encode(['success' => true]);
+        exit();
+    }
+    elseif ($action === 'update') {
         // Update existing post
         $stmt = $pdo->prepare("
             UPDATE Posts SET
@@ -143,10 +172,11 @@ try {
 
     echo json_encode(['success' => true, 'postId' => $postId]);
     
-} catch (PDOException $e) {
+} catch (Exception $e) {
     $pdo->rollBack();
     error_log("Error managing post: " . $e->getMessage());
-    echo json_encode(['success' => false, 'error' => 'Database error occurred']);
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
 }
 
 // Helper function to create URL-friendly slugs

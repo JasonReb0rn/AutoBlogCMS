@@ -122,8 +122,8 @@ function loadUsers() {
                     <td>${user.Role}</td>
                     <td>${user.CreatedAt}</td>
                     <td>
-                        <button onclick="editUser(${user.UserID})" class="btn-edit">Edit</button>
-                        <button onclick="deleteUser(${user.UserID})" class="btn-delete">Delete</button>
+                        <button onclick="editUser(${user.UserID})" class="btn btn-secondary">Edit</button>
+                        <button onclick="deleteUser(${user.UserID})" class="btn btn-danger">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -169,15 +169,24 @@ function loadPosts() {
             tbody.innerHTML = '';
             
             data.forEach(post => {
+                // Create URL-friendly slug from title
+                const slug = post.Title.toLowerCase()
+                    .trim()
+                    .replace(/[^a-z0-9-]+/g, '-');
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${post.Title}</td>
+                    <td>
+                        <a class="post-managment-link" href="/blog/post/${post.PostID}/${slug}" target="_blank">
+                            ${post.Title}
+                        </a>
+                    </td>
                     <td>${post.Username}</td>
                     <td>${post.Status}</td>
                     <td>${post.CreatedAt}</td>
                     <td>
-                        <button onclick="editPost(${post.PostID})" class="btn-edit">Edit</button>
-                        <button onclick="deletePost(${post.PostID})" class="btn-delete">Delete</button>
+                        <button onclick="editPost(${post.PostID})" class="btn btn-secondary">Edit</button>
+                        <button onclick="deletePost(${post.PostID})" class="btn btn-danger">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);

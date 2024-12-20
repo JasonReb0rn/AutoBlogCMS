@@ -76,3 +76,22 @@ function validateSlug($slug) {
     $slug = preg_replace('/[^a-z0-9-_]/', '', strtolower($slug));
     return $slug;
 }
+
+function getCategoriesWithPostCount($pdo) {
+    try {
+        $stmt = $pdo->query("
+            SELECT 
+                c.*,
+                COUNT(DISTINCT p.PostID) as post_count
+            FROM Categories c
+            LEFT JOIN PostCategories pc ON c.CategoryID = pc.CategoryID
+            LEFT JOIN Posts p ON pc.PostID = p.PostID AND p.Status = 'published'
+            GROUP BY c.CategoryID
+            ORDER BY c.Name ASC
+        ");
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error fetching categories with post count: " . $e->getMessage());
+        return [];
+    }
+}

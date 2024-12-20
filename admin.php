@@ -62,7 +62,7 @@ $stats = getDashboardStats($pdo);
             <section id="users" class="dashboard-section">
                 <h2>User Management</h2>
                 <div class="action-bar">
-                    <button onclick="showUserModal()" class="btn-primary">Add New User</button>
+                    <button onclick="showUserModal()" class="btn btn-primary">Add New User</button>
                 </div>
                 <div class="table-responsive">
                     <table id="usersTable">
@@ -85,7 +85,7 @@ $stats = getDashboardStats($pdo);
             <section id="posts" class="dashboard-section">
                 <h2>Post Management</h2>
                 <div class="action-bar">
-                    <button onclick="window.location.href='create-post.php'" class="btn-primary">Create New Post</button>
+                    <button onclick="window.location.href='create-post.php'" class="btn btn-primary">Create New Post</button>
                 </div>
                 <div class="table-responsive">
                     <table id="postsTable">
@@ -108,7 +108,7 @@ $stats = getDashboardStats($pdo);
             <section id="categories" class="dashboard-section">
                 <h2>Category Management</h2>
                 <div class="action-bar">
-                    <button onclick="showCategoryModal()" class="btn-primary">Add New Category</button>
+                    <button onclick="showCategoryModal()" class="btn btn-primary">Add New Category</button>
                 </div>
                 <div class="table-responsive">
                     <table id="categoriesTable">
@@ -152,7 +152,7 @@ $stats = getDashboardStats($pdo);
                         <option value="admin">Admin</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-primary">Save User</button>
+                <button type="submit" class="btn btn-primary">Save User</button>
             </form>
         </div>
     </div>
@@ -173,7 +173,7 @@ $stats = getDashboardStats($pdo);
                     <input type="text" id="categorySlug" name="slug" pattern="[a-z0-9_\-]*">
                     <small>Leave blank to auto-generate from name. Only lowercase letters, numbers, hyphens, and underscores allowed.</small>
                 </div>
-                <button type="submit" class="btn-primary">Save Category</button>
+                <button type="submit" class="btn btn-primary">Save Category</button>
             </form>
         </div>
     </div>

@@ -108,7 +108,10 @@ $categories = getAllCategories($pdo);
     <script>
         
         // Define custom image blot with additional features
+        const Inline = Quill.import('blots/inline');
+        const Block = Quill.import('blots/block');
         const BlockEmbed = Quill.import('blots/block/embed');
+        const Parchment = Quill.import('parchment');
 
         class BlogImageBlot extends BlockEmbed {
             static create(value) {
@@ -259,7 +262,70 @@ $categories = getAllCategories($pdo);
             };
         }
 
-        // Initialize Quill with custom image handler
+        // Register custom YouTube blot
+        class YouTubeBlot extends BlockEmbed {
+            static create(value) {
+                const node = super.create();
+                node.className = 'blog-video-wrapper';
+
+                // Create iframe with safe YouTube embed
+                const iframe = document.createElement('iframe');
+                iframe.setAttribute('src', value.src);
+                iframe.setAttribute('frameborder', '0');
+                iframe.setAttribute('allowfullscreen', 'true');
+                iframe.setAttribute('width', '100%');
+                iframe.setAttribute('height', '400');
+
+                node.appendChild(iframe);
+                return node;
+            }
+        
+            static value(node) {
+                const iframe = node.querySelector('iframe');
+                return {
+                    src: iframe.getAttribute('src')
+                };
+            }
+        }
+
+        YouTubeBlot.blotName = 'youtube-video';
+        YouTubeBlot.tagName = 'div';
+
+        // Register the custom blot
+        Quill.register(YouTubeBlot);
+
+        const YouTubeFormat = new Parchment.Attributor.Class('youtube', 'ql-youtube', {
+            scope: Parchment.Scope.INLINE
+        });
+        Quill.register(YouTubeFormat);
+
+        // Add YouTube handler function
+        function youtubeHandler() {
+            const url = prompt('Enter YouTube video URL:');
+            if (url) {
+                // Extract video ID from URL
+                const videoId = extractYouTubeId(url);
+                if (videoId) {
+                    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                    const range = quill.getSelection(true);
+                    quill.insertEmbed(range.index, 'youtube-video', { 
+                        src: embedUrl 
+                    }, Quill.sources.USER);
+                    quill.setSelection(range.index + 1, Quill.sources.SILENT);
+                } else {
+                    alert('Invalid YouTube URL');
+                }
+            }
+        }
+        
+        // Helper function to extract YouTube video ID
+        function extractYouTubeId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+        
+        // Initialize Quill with YouTube support
         var quill = new Quill('#editor', {
             theme: 'snow',
             modules: {
@@ -273,10 +339,12 @@ $categories = getAllCategories($pdo);
                         [{ 'indent': '-1'}, { 'indent': '+1' }],
                         [{ 'color': [] }, { 'background': [] }],
                         ['link', 'image'],
+                        [{ 'youtube': 'YouTube' }],
                         ['clean']
                     ],
                     handlers: {
-                        image: imageHandler
+                        'image': imageHandler,
+                        'youtube': youtubeHandler
                     }
                 }
             }
@@ -310,6 +378,7 @@ $categories = getAllCategories($pdo);
             const formData = new FormData(event.target);
             formData.append('content', quill.root.innerHTML);
             formData.append('status', 'published');
+            formData.append('action', 'create'); // Add this line
                 
             // Get featured image caption if it exists
             const captionElement = document.getElementById('imageCaption');
@@ -340,22 +409,23 @@ $categories = getAllCategories($pdo);
             
             return false;
         }
-
+        
         function saveDraft() {
             const form = document.getElementById('createPostForm');
             const formData = new FormData(form);
             formData.append('content', quill.root.innerHTML);
             formData.append('status', 'draft');
-
+            formData.append('action', 'create'); // Add this line
+        
             // Get featured image caption if it exists
             const captionElement = document.getElementById('imageCaption');
             if (captionElement && captionElement.textContent) {
                 formData.append('featuredImageCaption', captionElement.textContent);
             }
-
+        
             const tags = tagify.value.map(tag => tag.value);
             formData.append('tags', JSON.stringify(tags));
-
+        
             fetch('includes/manage-post.inc.php', {
                 method: 'POST',
                 body: formData

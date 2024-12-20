@@ -8,6 +8,7 @@ if (!defined('ROOT_PATH')) {
 
 require_once 'includes/dbh.inc.php';
 require_once 'includes/cache-manager.inc.php';
+require_once 'includes/sanitize.inc.php';
 
 // Set session cookie parameters to make it accessible across all directories
 session_set_cookie_params(0, '/');
@@ -77,6 +78,8 @@ try {
     
     // Save to cache
     $cache->set($postId, $content);
+
+    $post['Content'] = sanitizeHtml($post['Content']);
     
     // Output the content
     echo $content;
