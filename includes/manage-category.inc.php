@@ -18,7 +18,16 @@ switch ($action) {
     case 'create':
         $name = $_POST['name'] ?? '';
         $slug = $_POST['slug'] ?? '';
-        $response = createCategory($pdo, $name, $slug);
+        
+        // Length validation (hardcoded at 50, the db col's limit)
+        if (strlen($name) > 50) {
+            $response = [
+                'success' => false, 
+                'error' => 'Category name cannot exceed 50 characters'
+            ];
+        } else {
+            $response = createCategory($pdo, $name, $slug);
+        }
         break;
         
     case 'update':

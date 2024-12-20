@@ -166,7 +166,8 @@ $stats = getDashboardStats($pdo);
                 <input type="hidden" id="categoryId" name="categoryId">
                 <div class="form-group">
                     <label for="categoryName">Name</label>
-                    <input type="text" id="categoryName" name="name" required>
+                    <input type="text" id="categoryName" name="name" required maxlength="50">
+                    <small class="form-text">Maximum 50 characters allowed</small>
                 </div>
                 <div class="form-group">
                     <label for="categorySlug">Slug (optional)</label>

@@ -10,13 +10,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-generate slug from name
     document.getElementById('categoryName').addEventListener('input', function(e) {
         const slugInput = document.getElementById('categorySlug');
-        if (!slugInput.value) {
+        // Only auto-generate if the slug field hasn't been manually edited
+        if (!slugInput.dataset.manually_edited) {
             slugInput.value = e.target.value.toLowerCase()
                 .replace(/[^a-z0-9-_]/g, '-')
                 .replace(/-+/g, '-')
                 .replace(/^-|-$/g, '');
         }
     });
+
+    // Has the slug been manually edited?
+    document.getElementById('categorySlug').addEventListener('input', function(e) {
+        this.dataset.manually_edited = 'true';
+    });
+
 });
 
 function loadCategories() {
@@ -33,8 +40,8 @@ function loadCategories() {
                     <td>${category.Slug}</td>
                     <td>${category.CreatedAt}</td>
                     <td>
-                        <button onclick="editCategory(${category.CategoryID})" class="btn-edit">Edit</button>
-                        <button onclick="deleteCategory(${category.CategoryID})" class="btn-delete">Delete</button>
+                        <button onclick="editCategory(${category.CategoryID})" class="btn btn-secondary">Edit</button>
+                        <button onclick="deleteCategory(${category.CategoryID})" class="btn btn-danger">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -46,6 +53,10 @@ function loadCategories() {
 function showCategoryModal(categoryId = null) {
     const modal = document.getElementById('categoryModal');
     const form = document.getElementById('categoryForm');
+    const slugInput = document.getElementById('categorySlug');
+    
+    // Reset the manually_edited flag
+    slugInput.dataset.manually_edited = '';
     
     if (categoryId) {
         // Edit mode - fetch category details
@@ -61,6 +72,8 @@ function showCategoryModal(categoryId = null) {
                     document.getElementById('categoryId').value = category.CategoryID;
                     document.getElementById('categoryName').value = category.Name;
                     document.getElementById('categorySlug').value = category.Slug;
+                    // Mark as manually edited since we're loading an existing slug
+                    slugInput.dataset.manually_edited = 'true';
                 } else {
                     throw new Error('Invalid category data');
                 }
@@ -106,7 +119,18 @@ function saveCategory(e) {
             document.getElementById('categoryModal').style.display = "none";
             loadCategories();
         } else {
-            alert(data.error || 'An error occurred');
+            // Create or get error message element
+            let errorDiv = document.getElementById('categoryFormError');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'categoryFormError';
+                errorDiv.classList.add('error-message');
+                document.getElementById('categoryForm').prepend(errorDiv);
+            }
+            
+            // Show specific error message
+            errorDiv.textContent = data.error || 'An error occurred while saving the category';
+            errorDiv.style.display = 'block';
         }
     })
     .catch(error => console.error('Error saving category:', error));

@@ -179,6 +179,7 @@
 }
 
 .category-count {
+    height: fit-content;
     border: 1px solid #e4e4e4;
     padding: 0px 6px;
     border-radius: 5px;
