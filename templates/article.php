@@ -104,5 +104,6 @@
     <!-- PRESERVED_INCLUDE_END -->
 
     <script src="/js/image-modal.js"></script>
+    <script src="/js/search.js"></script>
 </body>
 </html>

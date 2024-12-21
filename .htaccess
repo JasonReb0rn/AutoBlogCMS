@@ -17,10 +17,20 @@ RewriteRule ^blog/post/([0-9]+)(/.*)?$ post.php?id=$1 [L,QSA]
 # Transforms /blog/page/2 to blog.php?page=2
 RewriteRule ^blog/page/([0-9]+)$ blog.php?page=$1 [L,QSA]
 
-# Pretty URLs for categories
+# Pretty URLs for categories with pagination
+# Transforms /category/tech/page/2 to category.php?slug=tech&page=2
+RewriteRule ^category/([^/]+)/page/([0-9]+)$ category.php?slug=$1&page=$2 [L,QSA]
+
+# Pretty URLs for categories (without page number)
+# Transforms /category/tech to category.php?slug=tech
 RewriteRule ^category/([^/]+)$ category.php?slug=$1 [L,QSA]
 
-# Pretty URLs for tags
+# Pretty URLs for tags with pagination
+# Transforms /tag/javascript/page/2 to tag.php?slug=javascript&page=2
+RewriteRule ^tag/([^/]+)/page/([0-9]+)$ tag.php?slug=$1&page=$2 [L,QSA]
+
+# Pretty URLs for tags (without page number)
+# Transforms /tag/javascript to tag.php?slug=javascript
 RewriteRule ^tag/([^/]+)$ tag.php?slug=$1 [L,QSA]
 
 # Prevent direct access to cache directory

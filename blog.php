@@ -12,34 +12,45 @@ $currentPage = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
 $offset = ($currentPage - 1) * $postsPerPage;
 
 try {
-    // Get total number of published posts
-    $stmt = $pdo->query("SELECT COUNT(*) FROM Posts WHERE Status = 'published'");
-    $totalPosts = $stmt->fetchColumn();
-    $totalPages = ceil($totalPosts / $postsPerPage);
-    
-    // Get posts for current page
-    $stmt = $pdo->prepare("
-        SELECT 
-            p.PostID,
-            p.Title,
-            p.CreatedAt,
-            p.FeaturedImage,
-            p.FeaturedImageCaption,
-            LEFT(p.Content, 300) as Excerpt,
-            u.Username as AuthorName,
-            GROUP_CONCAT(DISTINCT c.Name) as Categories
-        FROM Posts p
-        LEFT JOIN Users u ON p.UserID = u.UserID
-        LEFT JOIN PostCategories pc ON p.PostID = pc.PostID
-        LEFT JOIN Categories c ON pc.CategoryID = c.CategoryID
-        WHERE p.Status = 'published'
-        GROUP BY p.PostID
-        ORDER BY p.CreatedAt DESC
-        LIMIT ? OFFSET ?
-    ");
-    
-    $stmt->execute([$postsPerPage, $offset]);
-    $posts = $stmt->fetchAll();
+    // Check for search query
+    $searchTerm = $_GET['q'] ?? '';
+    if (!empty($searchTerm)) {
+        // Use the search handler instead of regular post query
+        require_once 'includes/search-handler.inc.php';
+        $searchResults = getSearchResults($pdo, $searchTerm, $currentPage, $postsPerPage);
+        $posts = $searchResults['posts'];
+        $totalPosts = $searchResults['total'];
+        $totalPages = $searchResults['pages'];
+    } else {
+        // Original post query code
+        $stmt = $pdo->query("SELECT COUNT(*) FROM Posts WHERE Status = 'published'");
+        $totalPosts = $stmt->fetchColumn();
+        $totalPages = ceil($totalPosts / $postsPerPage);
+        
+        // Get posts for current page
+        $stmt = $pdo->prepare("
+            SELECT 
+                p.PostID,
+                p.Title,
+                p.CreatedAt,
+                p.FeaturedImage,
+                p.FeaturedImageCaption,
+                LEFT(p.Content, 300) as Excerpt,
+                u.Username as AuthorName,
+                GROUP_CONCAT(DISTINCT c.Name) as Categories
+            FROM Posts p
+            LEFT JOIN Users u ON p.UserID = u.UserID
+            LEFT JOIN PostCategories pc ON p.PostID = pc.PostID
+            LEFT JOIN Categories c ON pc.CategoryID = c.CategoryID
+            WHERE p.Status = 'published'
+            GROUP BY p.PostID
+            ORDER BY p.CreatedAt DESC
+            LIMIT ? OFFSET ?
+        ");
+        
+        $stmt->execute([$postsPerPage, $offset]);
+        $posts = $stmt->fetchAll();
+    }
     
 ?>
 <!DOCTYPE html>
@@ -114,36 +125,43 @@ try {
                         <div class="post-excerpt">
                             <?php 
                             // Clean the excerpt and add ellipsis
-                            $excerpt = $post['Excerpt'];
-                            // Add spaces around block-level elements
-                            $excerpt = preg_replace('/<\/?(?:p|div|h[1-6]|ul|ol|li|blockquote|pre|table|tr|th|td)[^>]*>/i', ' $0 ', $excerpt);
-                            // Replace <br>, <br/>, and <br /> tags with a space
-                            $excerpt = preg_replace('/<br\s*\/?>/i', ' ', $excerpt);
-                            // Remove all HTML tags
-                            $excerpt = strip_tags($excerpt);
-                            // Replace multiple spaces (including newlines and tabs) with a single space
-                            $excerpt = preg_replace('/\s+/', ' ', $excerpt);
-                            // Trim whitespace
-                            $excerpt = trim($excerpt);
-
-                            // Check if the excerpt ends with a complete sentence
-                            $endsWithSentence = preg_match('/[.!?]\s*$/', $excerpt);
-                            // Check if the last word is complete (not cut off)
-                            $lastChar = substr($excerpt, -1);
-                            $endsWithCompleteWord = preg_match('/\s/', $lastChar) || preg_match('/[.!?,]/', $lastChar);
-
-                            // Add ellipsis if the excerpt doesn't end naturally
-                            if (!$endsWithSentence || !$endsWithCompleteWord) {
-                                // Find the last complete word
-                                $pos = strrpos($excerpt, ' ');
-                                if ($pos !== false) {
-                                    $excerpt = substr($excerpt, 0, $pos) . '...';
-                                } else {
-                                    $excerpt .= '...';
+                            $content = $post['Content'] ?? '';  // Use null coalescing operator to handle missing Content
+                            if (!empty($content)) {
+                                // Add spaces around block-level elements
+                                $content = preg_replace('/<\/?(?:p|div|h[1-6]|ul|ol|li|blockquote|pre|table|tr|th|td)[^>]*>/i', ' $0 ', $content);
+                                // Replace <br>, <br/>, and <br /> tags with a space
+                                $content = preg_replace('/<br\s*\/?>/i', ' ', $content);
+                                // Remove all HTML tags
+                                $content = strip_tags($content);
+                                // Replace multiple spaces (including newlines and tabs) with a single space
+                                $content = preg_replace('/\s+/', ' ', $content);
+                                // Trim whitespace
+                                $content = trim($content);
+                            
+                                // Check if the excerpt ends with a complete sentence
+                                $endsWithSentence = preg_match('/[.!?]\s*$/', $content);
+                                // Check if the last word is complete (not cut off)
+                                $lastChar = substr($content, -1);
+                                $endsWithCompleteWord = preg_match('/\s/', $lastChar) || preg_match('/[.!?,]/', $lastChar);
+                            
+                                // Truncate to 300 characters and add ellipsis if needed
+                                if (strlen($content) > 300) {
+                                    $content = substr($content, 0, 300);
+                                    // Find the last complete word
+                                    $pos = strrpos($content, ' ');
+                                    if ($pos !== false) {
+                                        $content = substr($content, 0, $pos) . '...';
+                                    } else {
+                                        $content .= '...';
+                                    }
                                 }
+                                // Add ellipsis if the excerpt doesn't end naturally
+                                elseif (!$endsWithSentence || !$endsWithCompleteWord) {
+                                    $content .= '...';
+                                }
+                            
+                                echo $content;
                             }
-
-                            echo $excerpt;
                             ?>
                         </div>
                         
@@ -186,7 +204,7 @@ try {
 
             <!-- Ad Box -->
             <div class="sidebar-sponsor-container">
-                <img src="https://champschance.s3.us-east-2.amazonaws.com/assets/sponsor_spot.png" alt="Ads support us so much!">
+                <img src="/img/sponsor_spot.png" alt="Ads support us so much!">
             </div>
         
         </div>
@@ -231,6 +249,7 @@ try {
     <?php
         include_once 'footer.php';
     ?>
+    <script src="/js/search.js"></script>
 </body>
 </html>
 <?php

@@ -90,7 +90,7 @@ function loadMiniPosts() {
                     const tfoot = document.createElement('tfoot');
                     tfoot.innerHTML = `
                         <tr>
-                            <td colspan="5" style="text-align: center;">
+                            <td colspan="5">
                                 <a href="posts-admin.php" class="btn btn-primary">View All Posts</a>
                             </td>
                         </tr>
@@ -266,7 +266,7 @@ function loadMiniCategories() {
                     const tfoot = document.createElement('tfoot');
                     tfoot.innerHTML = `
                         <tr>
-                            <td colspan="4" style="text-align: center;">
+                            <td colspan="4">
                                 <a href="categories-admin.php" class="btn btn-primary">View All Categories</a>
                             </td>
                         </tr>
